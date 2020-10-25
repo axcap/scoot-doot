@@ -1,0 +1,20 @@
+{
+  "name": "scoot-doot",
+  "version": "0.0.1",
+  "description": "See all scooters in one place",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon ./server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.6"
+  },
+  "repository": "git@github.com:axcap/scoot-doot.git",
+  "author": "Akhsarbek Gozoev <gakhsar@gmail.com>",
+  "license": "AGPL-3.0-or-later",
+  "private": false
+}
