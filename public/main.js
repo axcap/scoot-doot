@@ -1,4 +1,4 @@
-let server = "http://localhost:3000/api";
+let server = "https://scoot-doot.vercel.app/api";
 var map;
 
 function setup_map(latitude, longitude) {
