@@ -5,15 +5,16 @@
   "main": "server.js",
   "scripts": {
     "dev": "nodemon ./server.js",
+    "deploy": "vercel deploy --prod",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "express": "^4.17.1",
-    "request": "^2.88.2",
-    "vercel": "^20.1.2"
+    "request": "^2.88.2"
   },
   "devDependencies": {
-    "nodemon": "^2.0.6"
+    "nodemon": "^2.0.6",
+    "vercel": "^20.1.2"
   },
   "repository": "git@github.com:axcap/scoot-doot.git",
   "author": "Akhsarbek Gozoev <gakhsar@gmail.com>",
