@@ -1,4 +1,4 @@
-let server = "http://localhost:3000";
+let server = "http://localhost:3000/api";
 var map;
 
 function setup_map(latitude, longitude) {
