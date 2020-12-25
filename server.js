@@ -1,7 +1,7 @@
-var request = require("request");
 const express = require("express");
 import tier from "./api/bikes/tier/tier";
 import flash from "./api/bikes/tier/flash";
+import entur from "./api/bikes/entur/index.js";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -13,6 +13,10 @@ app.get("/bikes/tier", (req, res) => {
 
 app.get("/bikes/tier/flash", (req, res) => {
   flash(req, res);
+});
+
+app.get("/bikes/entur", (req, res) => {
+  entur(req, res);
 });
 
 app.listen(PORT, () => {

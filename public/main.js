@@ -1,6 +1,9 @@
-let server = "https://scoot-doot.vercel.app/api";
-//let server = "http://localhost:3000";
+//let server = "https://scoot-doot.vercel.app/api";
+let server = "http://localhost:3000";
 var map;
+
+// TODO: create global arrays for scooters and markers
+// instead of redrawing on top of existing ones
 
 function setup_map(latitude, longitude) {
   map = L.map("mapid").setView([latitude, longitude], 18);
@@ -47,41 +50,48 @@ function getLocation() {
   });
 }
 
-function make_bike_flash(e, bike_id) {
-  //alert("Flashing");
-  //console.log(e);
-  /*
-  var params = {
-    vehicleId: bike_id,
-  };
-  httpGetAsync(server + "/bikes/tier/flash" + formatParams(params), function (
-    data
-  ) {
-    console.log(data);
+function getIcon(operator) {
+  return new L.Icon({
+    iconUrl: `assets/markers/${operator}.png`,
+    iconSize: [25, 30],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
   });
-  */
 }
 
 function load_bikes(params) {
   Object.entries(params).forEach(([key, value]) => {
     console.log(key, value);
   });
-  httpGetAsync(server + "/bikes/tier" + formatParams(params), function (data) {
+  request_url = server + "/bikes/entur" + formatParams(params);
+  console.log("Request: ", request_url);
+  let operators = new Map();
+  httpGetAsync(request_url, function (data) {
     var json = JSON.parse(data);
+    console.log("Data: ", json);
 
-    Object.entries(json.data).forEach(([key, bike]) => {
-      let lat = bike.attributes.lat;
-      let lng = bike.attributes.lng;
+    // json = json.data;
+    Object.entries(json).forEach(([key, bike]) => {
+      console.log(bike);
+      let lat = bike.lat;
+      let lng = bike.lon;
+      if (operators[bike.operator]) {
+        operators[bike.operator]++;
+      } else {
+        operators[bike.operator] = 1;
+      }
 
       let bike_info = JSON.stringify(bike, null, 2);
-      L.marker([lat, lng])
+      L.marker([lat, lng], { icon: getIcon(bike.operator) })
         .addTo(map)
         .bindPopup(bike_info)
         .bindTooltip(bike_info)
         .on("click", (e) => {
-          make_bike_flash(e, bike.id);
+          // make_bike_flash(e, bike.id);
         });
     });
+
+    console.log("Operators: ", operators);
   });
 }
 
@@ -100,6 +110,7 @@ async function main() {
     };
   }
 
+  console.log(params);
   setup_map(params.lat, params.lng);
   map.on("dragend", function (e) {
     load_bikes(map.getCenter());
