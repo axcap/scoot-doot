@@ -5,12 +5,17 @@ var oslo = {
   lng: 10.43,
 };
 
+var prev_query;
+
 export default (req, res) => {
-  console.log(req.query);
+  if (JSON.stringify(prev_query) == JSON.stringify(req.query)) {
+    prev_query = req.query;
+    console.log(prev_query);
+  }
 
   var lat = req.query.lat || oslo.lat;
   var lng = req.query.lng || oslo.lng;
-  var range = req.query.range || 1000;
+  var range = req.query.range || 200;
   var max = req.query.max || 5000;
   var operators = req.query.operators || "";
   const options = {

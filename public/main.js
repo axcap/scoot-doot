@@ -5,9 +5,12 @@ var map;
 
 // TODO: create global arrays for scooters and markers
 // instead of redrawing on top of existing ones
+var current_markers = new Set();
+var current_scooters = new Map();
 
 function setup_map(latitude, longitude) {
-  map = L.map("mapid").setView([latitude, longitude], 13);
+  map = L.map("mapid").setView([latitude, longitude], 18);
+  L.control.scale().addTo(map);
 
   L.tileLayer(
     "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw",
@@ -61,38 +64,54 @@ function getIcon(operator) {
 }
 
 function load_bikes(params) {
-  Object.entries(params).forEach(([key, value]) => {
-    console.log(key, value);
-  });
   request_url = server + "/bikes/entur" + formatParams(params);
-  console.log("Request: ", request_url);
-  let operators = new Map();
+  var operators = new Map();
   httpGetAsync(request_url, function (data) {
     var json = JSON.parse(data);
-    console.log("Data: ", json);
 
     // json = json.data;
     Object.entries(json).forEach(([key, bike]) => {
-      console.log(bike);
-      let lat = bike.lat;
-      let lng = bike.lon;
-      if (operators[bike.operator]) {
-        operators[bike.operator]++;
+      if (current_scooters.has(bike.id)) {
       } else {
-        operators[bike.operator] = 1;
-      }
+        current_scooters.set(bike.id, bike);
 
-      let bike_info = JSON.stringify(bike, null, 2);
-      L.marker([lat, lng], { icon: getIcon(bike.operator) })
-        .addTo(map)
-        .bindPopup(bike_info)
-        .bindTooltip(bike_info)
-        .on("click", (e) => {
-          // make_bike_flash(e, bike.id);
-        });
+        let lat = bike.lat;
+        let lng = bike.lon;
+        if (operators.has(bike.operator)) {
+          operators.set(bike.operator, operators.get(bike.operator) + 1);
+        } else {
+          operators.set(bike.operator, 1);
+        }
+
+        let bike_info = JSON.stringify(bike, null, 2);
+        if (current_markers.has(`${lat}:${lng}`)) {
+        } else {
+          current_markers.add(`${lat}:${lng}`);
+
+          L.marker([lat, lng], { icon: getIcon(bike.operator) })
+            .addTo(map)
+            .bindPopup(bike_info)
+            .bindTooltip(bike_info);
+        }
+      }
     });
 
-    console.log("Operators: ", operators);
+    // console.log("Operators: ", operators);
+    const myJson = {};
+    myJson.Operators = Array.from(operators.keys());
+    myJson.Total = current_scooters.size;
+    console.log(JSON.stringify(myJson));
+
+    var pos = map.getCenter();
+    var zoomLevel = map.getZoom();
+    var params = {
+      lat: pos.lat,
+      lng: pos.lng,
+      range: 100,
+    };
+    setTimeout(function () {
+      load_bikes(params);
+    }, 5000);
   });
 }
 
@@ -111,11 +130,18 @@ async function main() {
     };
   }
 
-  console.log(params);
+  var params = {
+    lat: 59.911262,
+    lng: 10.750193,
+    range: 100,
+  };
+
+  console.log("Params: ", params);
   setup_map(params.lat, params.lng);
   map.on("dragend", function (e) {
     load_bikes(map.getCenter());
   });
+
   load_bikes(params);
 }
 
