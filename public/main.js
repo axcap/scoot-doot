@@ -1,5 +1,9 @@
-//let server = "https://scoot-doot.vercel.app/api";
-let server = "http://localhost:3000";
+let server = "https://scoot-doot.vercel.app/api";
+console.log(os.type());
+if (os.type() == "Windows_NT") {
+  let server = "http://localhost:3000";
+}
+
 var map;
 
 // TODO: create global arrays for scooters and markers
