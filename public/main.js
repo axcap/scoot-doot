@@ -1,5 +1,5 @@
-// let server = "https://scoot-doot.vercel.app/api";
-let server = "http://localhost:3000";
+let server = "https://scoot-doot.vercel.app/api";
+// let server = "http://localhost:3000";
 
 var map;
 
