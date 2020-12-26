@@ -2,16 +2,19 @@ let server = "https://scoot-doot.vercel.app/api";
 // let server = "http://localhost:3000";
 
 var map;
+var markerLayer;
+var newScooterLayer;
 
 // TODO: create global arrays for scooters and markers
 // instead of redrawing on top of existing ones
-var current_markers = new Set();
 var current_scooters = new Map();
 
 function setup_map(latitude, longitude) {
   map = L.map("mapid").setView([latitude, longitude], 18);
   L.control.scale().addTo(map);
 
+  newScooterLayer = L.layerGroup().addTo(map);
+  markerLayer = L.layerGroup().addTo(map);
   L.tileLayer(
     "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw",
     {
@@ -58,42 +61,40 @@ function getIcon(operator) {
   return new L.Icon({
     iconUrl: `assets/markers/${operator}.png`,
     iconSize: [25, 30],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
+    iconAnchor: [12, 30],
+    popupAnchor: [0, -30],
   });
 }
 
 function load_bikes(params) {
   request_url = server + "/bikes/entur" + formatParams(params);
   var operators = new Map();
+  newScooterLayer.clearLayers();
   httpGetAsync(request_url, function (data) {
     var json = JSON.parse(data);
 
     // json = json.data;
     Object.entries(json).forEach(([key, bike]) => {
-      if (current_scooters.has(bike.id)) {
-      } else {
+      if (!current_scooters.has(bike.id)) {
         current_scooters.set(bike.id, bike);
+        L.circle([bike.lat, bike.lon], { radius: 5 }).addTo(newScooterLayer);
 
-        let lat = bike.lat;
-        let lng = bike.lon;
+        markerLayer.clearLayers();
         if (operators.has(bike.operator)) {
           operators.set(bike.operator, operators.get(bike.operator) + 1);
         } else {
           operators.set(bike.operator, 1);
         }
-
-        let bike_info = JSON.stringify(bike, null, 2);
-        if (current_markers.has(`${lat}:${lng}`)) {
-        } else {
-          current_markers.add(`${lat}:${lng}`);
-
-          L.marker([lat, lng], { icon: getIcon(bike.operator) })
-            .addTo(map)
-            .bindPopup(bike_info)
-            .bindTooltip(bike_info);
-        }
       }
+    });
+
+    current_scooters.forEach((bike, id) => {
+      let bike_info = JSON.stringify(bike, null, 2);
+
+      L.marker([bike.lat, bike.lon], { icon: getIcon(bike.operator) })
+        .addTo(markerLayer)
+        .bindPopup(bike_info)
+        .bindTooltip(bike_info);
     });
 
     // console.log("Operators: ", operators);
